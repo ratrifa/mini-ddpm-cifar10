@@ -8,7 +8,7 @@ Acuan urutan kerja Proyek 1 (Mini DDPM CIFAR-10). Sesi dikerjakan bergantian kar
 | 2 | Satria | `src/diffusion.py`: noise schedule + forward process | Fungsi pembuat gambar noisy pada timestep t berjalan | Laptop | ✅ |
 | 3 | Gifan | Visualisasi forward process | Satu gambar ditampilkan makin noisy dari t=0 sampai T | Laptop | ⬜ |
 | 4 | Satria | `src/model.py`: U-Net + timestep & class embedding | Shape output sama dengan input | Laptop | ✅ |
-| 5 | Satria | `src/train.py` + `notebooks/train.ipynb`, uji coba training singkat | Loss turun, checkpoint tersimpan ke Google Drive | Colab | ⬜ |
+| 5 | Satria | `src/train.py` + `notebooks/train.ipynb`, uji coba training singkat | Loss turun, checkpoint tersimpan ke Google Drive | Colab | 🟨 |
 | 6 | Satria | Sampling (reverse process) | Gambar hasil generate keluar | Colab | ⬜ |
 | 7 | Gifan | `src/visualize.py`: kurva loss + grid sampel per kelas | Grafik + grid siap dipakai di laporan | Laptop/Colab | ⬜ |
 | 8 | Satria | Training penuh + tuning hyperparameter | Perbandingan hasil eksperimen tercatat | Colab | ⬜ |
