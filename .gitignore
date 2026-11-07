@@ -1,0 +1,16 @@
+# dataset (auto-downloaded by torchvision)
+data/
+
+# model checkpoints & generated outputs (large)
+checkpoints/
+*.pt
+*.pth
+outputs/*
+!outputs/.gitkeep
+
+# python / notebook junk
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.venv/
