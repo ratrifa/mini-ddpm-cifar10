@@ -13,7 +13,7 @@
 
 #### Prompt 1 — Loader dasar
 - **Prompt Kelompok:** "buatin data.py buat load CIFAR-10 dengan normalisasi [-1, 1]"
-- **Alasan Khusus:** _(draf, sesuaikan)_ Model difusi menambahkan noise Gaussian N(0, 1) ke gambar, sehingga gambar perlu berada di rentang yang berpusat di nol dengan skala yang sebanding dengan noise. Prompt sengaja dibuat singkat dan fokus pada satu kebutuhan dulu (load + normalisasi) sebelum menambah fitur lain.
+- **Alasan Khusus:** Model difusi menambahkan noise Gaussian N(0, 1) ke gambar, sehingga gambar perlu berada di rentang yang berpusat di nol dengan skala yang sebanding dengan noise. Prompt sengaja dibuat singkat dan fokus pada satu kebutuhan dulu (load + normalisasi) sebelum menambah fitur lain.
 - **Output Model:** Fungsi `get_dataloader(root, batch_size, train, num_workers)` dengan transform `ToTensor()` ([0, 255] → [0, 1]) lalu `Normalize((0.5,)*3, (0.5,)*3)` ([0, 1] → [-1, 1]); `shuffle` dan `drop_last` hanya untuk data train; konstanta `CLASSES` berisi 10 nama kelas; blok uji `python src/data.py`.
   ```python
   transforms.ToTensor(),                                   # [0, 255] -> [0, 1]
@@ -31,7 +31,7 @@
 #### Prompt 2 — Augmentasi
 - **Catatan:** Sebelum prompt ini, kelompok meminta LLM memberi contoh prompt untuk langkah augmentasi dan visualisasi, lalu memakainya sebagai dasar.
 - **Prompt Kelompok:** "Tambahin random horizontal flip di get_dataloader, tapi cuma buat data train. Data test jangan di-flip. Kasih juga alasan singkat kenapa flip horizontal cocok buat CIFAR-10, tapi flip vertikal nggak."
-- **Alasan Khusus:** _(draf, sesuaikan)_ Menambah variasi data tanpa menambah jumlah gambar. Data test dibiarkan asli agar evaluasi dan visualisasi tidak terpengaruh augmentasi. Meminta alasan agar kelompok memahami dampak augmentasi pada model generatif, bukan hanya menerima kode.
+- **Alasan Khusus:** Menambah variasi data tanpa menambah jumlah gambar. Data test dibiarkan asli agar evaluasi dan visualisasi tidak terpengaruh augmentasi. Meminta alasan agar kelompok memahami dampak augmentasi pada model generatif, bukan hanya menerima kode.
 - **Output Model:** `RandomHorizontalFlip()` (p = 0.5) ditambahkan di awal transform hanya bila `train=True`.
   ```python
   augment = [transforms.RandomHorizontalFlip()] if train else []  # p=0.5, hanya data train
@@ -41,7 +41,7 @@
 
 #### Prompt 3 — Visualisasi grid
 - **Prompt Kelompok:** "Bikin fungsi buat nampilin grid contoh dataset: 10 baris buat 10 kelas, tiap baris 8 gambar, nama kelas di kiri tiap baris. Gambar harus dibalikin dulu dari [-1, 1] ke [0, 1] sebelum ditampilin. Simpan hasilnya ke outputs/dataset_samples.png."
-- **Alasan Khusus:** _(draf, sesuaikan)_ Memastikan secara visual bahwa label sesuai dengan gambar dan normalisasi tidak merusak warna. Fungsi pembalik normalisasi juga akan dipakai ulang untuk menampilkan hasil generate model.
+- **Alasan Khusus:** Memastikan secara visual bahwa label sesuai dengan gambar dan normalisasi tidak merusak warna. Fungsi pembalik normalisasi juga akan dipakai ulang untuk menampilkan hasil generate model.
 - **Output Model:** File `src/visualize.py` berisi `to_display(x)` (`(x + 1) / 2`, clamp ke [0, 1], ubah `(3, H, W)` → `(H, W, 3)`) dan `show_dataset_grid(dataset, out_path, per_class=8)`. Grid memakai data test agar tidak tercampur gambar hasil flip.
 - **Hasil:** `outputs/dataset_samples.png` (10 kelas × 8 gambar, warna normal, label sesuai).
 
