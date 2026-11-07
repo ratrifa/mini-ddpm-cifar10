@@ -3,9 +3,11 @@
 Contoh: python src/train.py --epochs 100 --ckpt-dir /content/drive/MyDrive/mini-ddpm/run1
 
 Isi --ckpt-dir:
-- last.pt       : checkpoint terakhir {model, ema, optimizer, epoch, config}; otomatis
+- last.pt       : checkpoint terakhir {model, ema, optimizer, epoch, step, config}; otomatis
                   dilanjutkan (resume) bila file ini sudah ada.
-- loss_log.csv  : kolom epoch,loss,seconds (rata-rata loss MSE per epoch) untuk kurva loss.
+- loss_log.csv  : kolom epoch,loss,seconds (rata-rata loss MSE per epoch).
+- loss_steps.csv: kolom step,epoch,loss (loss tiap langkah) untuk visualize.plot_loss_curve.
+                  Ditulis di akhir tiap epoch, tepat sebelum checkpoint, agar tetap sinkron saat resume.
 """
 
 import argparse
@@ -76,7 +78,8 @@ def main():
     os.makedirs(args.ckpt_dir, exist_ok=True)
     ckpt_path = os.path.join(args.ckpt_dir, "last.pt")
     log_path = os.path.join(args.ckpt_dir, "loss_log.csv")
-    start_epoch = 0
+    steps_path = os.path.join(args.ckpt_dir, "loss_steps.csv")
+    start_epoch, global_step = 0, 0
     if os.path.exists(ckpt_path):
         ckpt = torch.load(ckpt_path, map_location=device)
         if ckpt["config"] != config:
@@ -85,6 +88,7 @@ def main():
         ema.load_state_dict(ckpt["ema"])
         optimizer.load_state_dict(ckpt["optimizer"])
         start_epoch = ckpt["epoch"]
+        global_step = ckpt.get("step", 0)
         print(f"resume dari {ckpt_path}, epoch selesai: {start_epoch}")
 
     loader = get_dataloader(root=args.data_root, batch_size=args.batch_size, train=True,
@@ -95,6 +99,7 @@ def main():
     for epoch in range(start_epoch, args.epochs):
         model.train()
         total, n, start = 0.0, 0, time.time()
+        step_losses = []
         for step, (x0, y) in enumerate(loader):
             if args.steps_per_epoch and step >= args.steps_per_epoch:
                 break
@@ -113,7 +118,8 @@ def main():
             optimizer.step()
             update_ema(ema, model, args.ema_decay)
 
-            total += loss.item()
+            step_losses.append(loss.item())
+            total += step_losses[-1]
             n += 1
             if (step + 1) % args.log_every == 0:
                 print(f"  epoch {epoch + 1} langkah {step + 1}: loss {total / n:.4f}")
@@ -125,8 +131,16 @@ def main():
             if new_file:
                 writer.writerow(["epoch", "loss", "seconds"])
             writer.writerow([epoch + 1, f"{avg:.6f}", f"{seconds:.1f}"])
+        new_file = not os.path.exists(steps_path)
+        with open(steps_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            if new_file:
+                writer.writerow(["step", "epoch", "loss"])
+            for i, value in enumerate(step_losses, start=global_step + 1):
+                writer.writerow([i, epoch + 1, f"{value:.6f}"])
+        global_step += len(step_losses)
         save_checkpoint({"model": model.state_dict(), "ema": ema.state_dict(),
-                         "optimizer": optimizer.state_dict(), "epoch": epoch + 1, "config": config}, ckpt_path)
+                         "optimizer": optimizer.state_dict(), "epoch": epoch + 1, "step": global_step, "config": config}, ckpt_path)
         print(f"epoch {epoch + 1}/{args.epochs}: loss {avg:.4f} ({seconds:.0f} detik), tersimpan {ckpt_path}")
 
 
