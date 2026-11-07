@@ -1,10 +1,11 @@
-"""Visualisasi untuk Mini DDPM: contoh dataset (dan nanti kurva loss serta grid sampel)."""
+"""Visualisasi untuk Mini DDPM: contoh dataset, kurva loss training, dan grid sampel per kelas."""
 
 import os
 
 import matplotlib
 matplotlib.use("Agg")  # simpan ke file tanpa membuka jendela (aman di Colab/terminal)
 import matplotlib.pyplot as plt
+import numpy as np
 
 from data import CLASSES
 
@@ -37,6 +38,68 @@ def show_dataset_grid(dataset, out_path="outputs/dataset_samples.png", per_class
         axes[c, 0].set_ylabel(CLASSES[c], rotation=0, ha="right", va="center", fontsize=10)
 
     fig.suptitle("Contoh dataset CIFAR-10 per kelas")
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    fig.savefig(out_path, dpi=120)
+    plt.close(fig)
+    return out_path
+
+
+def plot_loss_curve(losses, out_path="outputs/loss_curve.png", window=100):
+    """Menyimpan kurva loss training (satu nilai per step) beserta rata-rata bergeraknya.
+
+    Loss per step DDPM sangat berisik karena timestep t dan noise diambil acak tiap batch,
+    jadi tren dibaca dari garis rata-rata bergerak (window step terakhir), bukan dari nilai mentah.
+    Sumbu y logaritmik karena loss turun cepat di awal lalu melandai.
+    """
+    losses = np.asarray(losses, dtype=float)
+    steps = np.arange(1, len(losses) + 1)
+
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.plot(steps, losses, color="tab:blue", alpha=0.25, linewidth=0.8, label="loss per step")
+    if len(losses) >= window:
+        smooth = np.convolve(losses, np.ones(window) / window, mode="valid")
+        ax.plot(steps[window - 1:], smooth, color="tab:blue", linewidth=2,
+                label=f"rata-rata {window} step")
+    ax.set_yscale("log")
+    ax.set_xlabel("step")
+    ax.set_ylabel("MSE loss (noise)")
+    ax.set_title("Kurva loss training")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend()
+
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    fig.savefig(out_path, dpi=120)
+    plt.close(fig)
+    return out_path
+
+
+def show_sample_grid(samples, labels, out_path="outputs/samples_per_class.png", title="Sampel hasil generate per kelas"):
+    """Menyimpan grid sampel hasil generate: satu baris per kelas, nama kelas di kiri tiap baris.
+
+    samples : tensor (N, 3, H, W) di rentang [-1, 1] (keluaran sampling, belum di-clamp tidak apa-apa)
+    labels  : tensor/list (N,) berisi indeks kelas tiap sampel
+    Jumlah kolom = jumlah sampel terbanyak di satu kelas; kelas yang sampelnya lebih sedikit
+    menyisakan sel kosong.
+    """
+    labels = [int(c) for c in labels]
+    rows = {c: [i for i, lab in enumerate(labels) if lab == c] for c in sorted(set(labels))}
+    n_cols = max(len(v) for v in rows.values())
+
+    fig, axes = plt.subplots(len(rows), n_cols, figsize=(n_cols * 1.1, len(rows) * 1.1), squeeze=False)
+    for r, (c, indices) in enumerate(rows.items()):
+        for j in range(n_cols):
+            ax = axes[r, j]
+            if j < len(indices):
+                ax.imshow(to_display(samples[indices[j]]))
+            ax.set_xticks([])
+            ax.set_yticks([])
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+        axes[r, 0].set_ylabel(CLASSES[c], rotation=0, ha="right", va="center", fontsize=10)
+
+    fig.suptitle(title)
     fig.tight_layout()
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     fig.savefig(out_path, dpi=120)
