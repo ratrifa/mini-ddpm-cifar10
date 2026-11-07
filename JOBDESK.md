@@ -37,7 +37,7 @@ Panduan proyek mendefinisikan 4 peran untuk 4 anggota. Kelompok 14 beranggotakan
 **File utama:** `src/data.py`, `src/visualize.py`, `logs/`, laporan akhir
 
 ## Dikerjakan Bersama
-- **Code review silang:** setiap modul dikerjakan di branch sendiri lalu digabung lewat Pull Request yang di-review anggota lain.
+- **Code review silang:** setiap modul dikerjakan di branch sendiri, dicek bersama oleh anggota lain di laptop, lalu di-merge ke `main`.
 - **Sampling & evaluasi akhir:** memilih checkpoint terbaik, membuat grid sampel 10 kelas.
 - **Presentasi:** kedua anggota wajib memahami seluruh modul, bukan hanya bagiannya sendiri.
 
