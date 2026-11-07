@@ -1,4 +1,4 @@
-"""Noise schedule dan forward process (q) untuk Mini DDPM (Ho et al., 2020).
+"""Noise schedule, forward process (q), dan reverse process / sampling untuk Mini DDPM (Ho et al., 2020).
 
 Konvensi timestep: indeks t berjalan dari 0 sampai T-1. Indeks 0 setara t=1 di paper
 (sudah sedikit bernoise); gambar bersih adalah x0 itu sendiri, bukan q_sample(x0, 0).
@@ -17,9 +17,15 @@ class Diffusion:
         self.alphas = 1.0 - self.betas
         # alpha_bar_t = prod(alpha_1..alpha_t): sisa porsi sinyal asli setelah t langkah
         self.alpha_bars = torch.cumprod(self.alphas, dim=0)
+        # alpha_bar_{t-1}; untuk indeks 0 dipakai 1.0 (gambar bersih)
+        alpha_bars_prev = torch.cat([torch.ones(1, dtype=torch.float64), self.alpha_bars[:-1]])
         # dihitung di float64 lalu disimpan float32 (MPS tidak mendukung float64)
         self.sqrt_alpha_bars = self.alpha_bars.sqrt().float()
         self.sqrt_one_minus_alpha_bars = (1.0 - self.alpha_bars).sqrt().float()
+        # posterior q(x_{t-1} | x_t, x0) untuk reverse process (Ho et al., 2020, persamaan 7)
+        self.posterior_variance = (self.betas * (1.0 - alpha_bars_prev) / (1.0 - self.alpha_bars)).float()
+        self.posterior_mean_coef1 = (self.betas * alpha_bars_prev.sqrt() / (1.0 - self.alpha_bars)).float()
+        self.posterior_mean_coef2 = ((1.0 - alpha_bars_prev) * self.alphas.sqrt() / (1.0 - self.alpha_bars)).float()
         self.betas = self.betas.float()
         self.alphas = self.alphas.float()
         self.alpha_bars = self.alpha_bars.float()
@@ -49,6 +55,36 @@ class Diffusion:
             noise = torch.randn_like(x0)
         return (self._extract(self.sqrt_alpha_bars, t, x0) * x0
                 + self._extract(self.sqrt_one_minus_alpha_bars, t, x0) * noise)
+
+    @torch.no_grad()
+    def sample(self, model, labels, guidance_scale=3.0, image_size=32):
+        """Reverse process: membuat gambar dari noise murni, T langkah dari t=T-1 ke 0.
+
+        model          : U-Net (sebaiknya bobot EMA, mode eval) dengan forward(x, t, y)
+        labels         : tensor long (B,), kelas yang ingin dibuat; device-nya dipakai untuk sampling
+        guidance_scale : classifier-free guidance; 1.0 = murni conditional, >1 kelas makin tegas
+        Mengembalikan gambar (B, 3, image_size, image_size) di rentang [-1, 1].
+        """
+        device = labels.device
+        n = labels.shape[0]
+        null = torch.full_like(labels, model.num_classes)  # token tanpa kelas
+        x = torch.randn(n, 3, image_size, image_size, device=device)
+        for i in reversed(range(self.timesteps)):
+            t = torch.full((n,), i, dtype=torch.long, device=device)
+            # prediksi noise dengan dan tanpa kelas dalam satu batch, lalu digabung (CFG)
+            eps_cond, eps_uncond = model(torch.cat([x, x]), torch.cat([t, t]),
+                                         torch.cat([labels, null])).chunk(2)
+            eps = eps_uncond + guidance_scale * (eps_cond - eps_uncond)
+            # tebak x0 dari x_t dan noise, dipotong ke [-1, 1] agar tetap di rentang gambar
+            x0_pred = ((x - self._extract(self.sqrt_one_minus_alpha_bars, t, x) * eps)
+                       / self._extract(self.sqrt_alpha_bars, t, x)).clamp(-1, 1)
+            mean = (self._extract(self.posterior_mean_coef1, t, x) * x0_pred
+                    + self._extract(self.posterior_mean_coef2, t, x) * x)
+            if i > 0:
+                x = mean + self._extract(self.posterior_variance, t, x).sqrt() * torch.randn_like(x)
+            else:
+                x = mean  # langkah terakhir tanpa noise (varians posterior = 0)
+        return x
 
 
 if __name__ == "__main__":
