@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use("Agg")  # simpan ke file tanpa membuka jendela (aman di Colab/terminal)
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 from data import CLASSES
 
@@ -38,6 +39,47 @@ def show_dataset_grid(dataset, out_path="outputs/dataset_samples.png", per_class
         axes[c, 0].set_ylabel(CLASSES[c], rotation=0, ha="right", va="center", fontsize=10)
 
     fig.suptitle("Contoh dataset CIFAR-10 per kelas")
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    fig.savefig(out_path, dpi=120)
+    plt.close(fig)
+    return out_path
+
+
+def show_forward_process(images, diffusion, timesteps=(0, 100, 200, 300, 400, 500, 700, 999),
+                         out_path="outputs/forward_process.png", row_labels=None):
+    """Menyimpan grid forward process: tiap baris satu gambar, makin ke kanan makin noisy.
+
+    images     : tensor (N, 3, H, W) di [-1, 1]; kolom pertama gambar asli x0
+    diffusion  : objek Diffusion (src/diffusion.py); x_t dibuat dengan diffusion.q_sample
+    timesteps  : indeks t (0..T-1) untuk kolom berikutnya
+    row_labels : opsional, teks di kiri tiap baris (misal nama kelas)
+    Satu noise dipakai untuk semua timestep pada gambar yang sama, jadi perbedaan antarkolom
+    hanya berasal dari t (porsi sinyal sqrt(alpha_bar_t) yang ditulis di judul kolom).
+    """
+    n = images.shape[0]
+    ts = torch.tensor(timesteps, dtype=torch.long)
+    noise = torch.randn_like(images)
+
+    fig, axes = plt.subplots(n, len(ts) + 1, figsize=((len(ts) + 1) * 1.2, n * 1.2 + 0.4), squeeze=False)
+    for i in range(n):
+        x0 = images[i:i + 1].repeat(len(ts), 1, 1, 1)
+        xt = diffusion.q_sample(x0, ts, noise[i:i + 1].expand(len(ts), -1, -1, -1))
+        for j, img in enumerate([images[i]] + list(xt)):
+            ax = axes[i, j]
+            ax.imshow(to_display(img))
+            ax.set_xticks([])
+            ax.set_yticks([])
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+        if row_labels is not None:
+            axes[i, 0].set_ylabel(row_labels[i], rotation=0, ha="right", va="center", fontsize=10)
+
+    axes[0, 0].set_title("x0 (asli)", fontsize=9)
+    for j, t in enumerate(timesteps, start=1):
+        axes[0, j].set_title(f"t={t}\n√ᾱ={diffusion.sqrt_alpha_bars[t]:.2f}", fontsize=9)
+
+    fig.suptitle("Forward process q(x_t | x_0): gambar makin noisy seiring t")
     fig.tight_layout()
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     fig.savefig(out_path, dpi=120)
@@ -108,7 +150,21 @@ def show_sample_grid(samples, labels, out_path="outputs/samples_per_class.png", 
 
 
 if __name__ == "__main__":
-    from data import get_dataloader
+    import sys
 
-    dataset = get_dataloader(train=False, num_workers=0).dataset  # data test: tanpa flip
+    from data import get_dataloader
+    from diffusion import Diffusion
+
+    root = sys.argv[1] if len(sys.argv) > 1 else "./data"  # lokasi CIFAR-10 bisa dioper lewat argumen
+    dataset = get_dataloader(root=root, train=False, num_workers=0).dataset  # data test: tanpa flip
     print("tersimpan:", show_dataset_grid(dataset))
+
+    # forward process: gambar test pertama dari tiap kelas, noise tetap (seed 0) agar hasil bisa diulang
+    torch.manual_seed(0)
+    first = {}
+    for idx, label in enumerate(dataset.targets):
+        first.setdefault(label, idx)
+        if len(first) == len(CLASSES):
+            break
+    images = torch.stack([dataset[first[c]][0] for c in range(len(CLASSES))])
+    print("tersimpan:", show_forward_process(images, Diffusion(), row_labels=CLASSES))
