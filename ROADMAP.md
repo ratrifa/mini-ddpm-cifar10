@@ -5,7 +5,7 @@ Acuan urutan kerja Proyek 1 (Mini DDPM CIFAR-10). Sesi dikerjakan bergantian kar
 | Sesi | Siapa | Modul | Kriteria selesai | Tempat | Status |
 |---|---|---|---|---|---|
 | 1 | Gifan | `src/data.py` + visualisasi contoh dataset | Shape batch `(B, 3, 32, 32)`, nilai pixel di rentang [-1, 1], grid 10 kelas tampil | Laptop | ✅ |
-| 2 | Satria | `src/diffusion.py`: noise schedule + forward process | Fungsi pembuat gambar noisy pada timestep t berjalan | Laptop | ⬜ |
+| 2 | Satria | `src/diffusion.py`: noise schedule + forward process | Fungsi pembuat gambar noisy pada timestep t berjalan | Laptop | ✅ |
 | 3 | Gifan | Visualisasi forward process | Satu gambar ditampilkan makin noisy dari t=0 sampai T | Laptop | ⬜ |
 | 4 | Satria | `src/model.py`: U-Net + timestep & class embedding | Shape output sama dengan input | Laptop | ⬜ |
 | 5 | Satria | `src/train.py` + `notebooks/train.ipynb`, uji coba training singkat | Loss turun, checkpoint tersimpan ke Google Drive | Colab | ⬜ |
