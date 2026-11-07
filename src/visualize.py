@@ -1,5 +1,6 @@
 """Visualisasi untuk Mini DDPM: contoh dataset, kurva loss training, dan grid sampel per kelas."""
 
+import csv
 import os
 
 import matplotlib
@@ -85,6 +86,19 @@ def show_forward_process(images, diffusion, timesteps=(0, 100, 200, 300, 400, 50
     fig.savefig(out_path, dpi=120)
     plt.close(fig)
     return out_path
+
+
+def read_step_losses(csv_path):
+    """Membaca loss_steps.csv dari train.py (kolom step,epoch,loss) menjadi list loss urut per step.
+
+    Bila satu step tercatat dua kali (Colab putus setelah CSV ditulis tetapi sebelum checkpoint
+    tersimpan, lalu epoch itu diulang saat resume), nilai yang dipakai adalah yang terakhir.
+    """
+    by_step = {}
+    with open(csv_path, newline="") as f:
+        for row in csv.DictReader(f):
+            by_step[int(row["step"])] = float(row["loss"])
+    return [by_step[s] for s in sorted(by_step)]
 
 
 def plot_loss_curve(losses, out_path="outputs/loss_curve.png", window=100):
