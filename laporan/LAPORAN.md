@@ -165,7 +165,16 @@ Sampel dibuat dari bobot EMA run1 epoch 100, 8 gambar per kelas, dengan noise aw
 > **Catatan: perbandingan visual E2 dan run1 tidak setara.** Gambar 7 berasal dari epoch 30, sedangkan Gambar 4 dari epoch 100. Checkpoint run1 pada epoch 30 tidak disimpan, jadi tidak ada sampel run1 pada jumlah epoch yang sama. Perbedaan kualitas antara kedua grid bisa berasal dari jumlah epoch, bukan dari learning rate. Perbandingan yang adil antara keduanya hanya kurva loss pada epoch 1–30 (Gambar 6).
 
 ### 4.4 Analisis
-_(isi: kesimpulan kelompok dari 4.1–4.3, keterbatasan evaluasi (tanpa FID, hanya pengamatan visual), dan E3 bila jadi dijalankan)_
+_(draf LLM, disetujui Gifan)_
+
+1. **Kurva loss.** Hampir semua penurunan loss terjadi di awal training. Setelah sekitar epoch 20, loss cuma turun sedikit, dan nilai terendahnya di epoch 79. Artinya, dari sisi loss, 100 epoch sudah lebih dari cukup. Tapi loss yang mendatar tidak berarti gambarnya berhenti membaik. Loss DDPM adalah rata-rata kesalahan prediksi noise di semua t, jadi perbaikan detail gambar tidak selalu terlihat di angka loss. Kualitas sampel tetap harus dinilai dari gambarnya.
+2. **Guidance scale.** Class conditioning terbukti bekerja: dengan w = 0 kelasnya acak, dan mulai w = 3 semua baris sesuai label. Ada trade-off antara kejelasan kelas dan variasi. w = 5 membuat warna berlebihan dan gambarnya makin seragam, jadi w = 3 dipilih sebagai titik tengah. Kucing dan anjing paling sulit, kemungkinan karena bentuknya mirip satu sama lain dan sangat bervariasi di resolusi 32×32.
+3. **Learning rate.** lr 4e-4 mempercepat penurunan loss di awal, tapi keuntungannya hilang setelah sekitar epoch 15–20. Jadi menaikkan lr cuma berguna kalau waktu training sangat terbatas, dan tidak menghasilkan model yang lebih baik di akhir. lr 2e-4 tetap dipakai sebagai baseline.
+4. **Keterbatasan.**
+   - Evaluasinya hanya visual dan berdasarkan loss, tanpa metrik kuantitatif seperti FID.
+   - Perbandingan visual E2 dan run1 tidak setara karena jumlah epoch-nya berbeda.
+   - E3 (T = 500) tidak dijalankan. Kuota GPU Colab habis, dan di laptop 30 epoch butuh sekitar 2 jam 40 menit. Selain itu, dengan β yang sama, T = 500 masih menyisakan sekitar 8% sinyal di langkah terakhir, sehingga hasilnya sulit dibaca tanpa menyesuaikan `beta_end` (lihat [EXPERIMENTS.md](../EXPERIMENTS.md)).
+   - Untuk ke depannya, cosine schedule, self-attention, atau model yang lebih besar bisa dicoba.
 
 ---
 
