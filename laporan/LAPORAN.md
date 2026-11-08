@@ -188,7 +188,7 @@ Alur kerja: tiap modul dikerjakan di branch sendiri (git worktree terpisah per a
 | 4 | U-Net + embedding | Satria | [2026-11-07-model.md](../logs/2026-11-07-model.md) | _(isi)_ |
 | 5 | Training loop + notebook | Satria | [2026-11-07-train.md](../logs/2026-11-07-train.md) | _(isi)_ |
 | 6 | Sampling | Satria | [2026-11-07-sampling.md](../logs/2026-11-07-sampling.md) | _(isi)_ |
-| 8 | Training penuh + tuning | Satria | _(belum)_ | _(isi)_ |
+| 8 | Training penuh + tuning (run1, E1, E2) | Satria | [2026-11-08-tuning.md](../logs/2026-11-08-tuning.md) | _(isi)_ |
 
 _(isi: ringkasan pola prompt, eror penting, dan pelajaran yang diambil)_
 
