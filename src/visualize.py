@@ -131,6 +131,32 @@ def plot_loss_curve(losses, out_path="outputs/loss_curve.png", window=100):
     return out_path
 
 
+def plot_epoch_loss_compare(runs, out_path="outputs/loss_compare.png", max_epoch=None):
+    """Menyimpan grafik loss rata-rata per epoch beberapa run dalam satu sumbu.
+
+    runs      : dict {nama run: path loss_log.csv (kolom epoch,loss,seconds dari train.py)}
+    max_epoch : bila diisi, hanya epoch 1..max_epoch yang digambar (agar run beda panjang setara)
+    """
+    fig, ax = plt.subplots(figsize=(7, 4))
+    for name, csv_path in runs.items():
+        with open(csv_path, newline="") as f:
+            rows = [(int(r["epoch"]), float(r["loss"])) for r in csv.DictReader(f)]
+        rows = [r for r in rows if max_epoch is None or r[0] <= max_epoch]
+        ax.plot([e for e, _ in rows], [l for _, l in rows], marker="o", markersize=3, label=name)
+    ax.set_yscale("log")
+    ax.set_xlabel("epoch")
+    ax.set_ylabel("MSE loss rata-rata per epoch")
+    ax.set_title("Perbandingan loss per epoch")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend()
+
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    fig.savefig(out_path, dpi=120)
+    plt.close(fig)
+    return out_path
+
+
 def show_sample_grid(samples, labels, out_path="outputs/samples_per_class.png", title="Sampel hasil generate per kelas"):
     """Menyimpan grid sampel hasil generate: satu baris per kelas, nama kelas di kiri tiap baris.
 
