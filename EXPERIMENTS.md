@@ -81,6 +81,6 @@ Colab gratis tidak menjamin durasi sesi dan bisa memutus runtime. Bila terputus:
 | ID | Perubahan dari baseline | Epoch | Loss epoch terakhir | Loss epoch 30 | Waktu | Catatan visual |
 |---|---|---|---|---|---|---|
 | run1 | — | 100 | | | | |
-| E1 | guidance 0 / 1 / 3 / 5 | 100 | — | — | | |
+| E1 | guidance 0 / 1 / 3 / 5 | 100 | — | — | 10 menit 10 detik, 4 skala × 80 gambar, di laptop (MPS) karena kuota GPU Colab habis | **0:** objek terbentuk tapi kelas acak · **1:** sebagian besar sesuai kelas, ada yang meleset (objek merah di baris kuda, kucing kabur) · **3:** semua baris jelas sesuai kelas; kucing/anjing paling lemah · **5:** komposisi sama dengan 3 (seed sama), warna lebih jenuh, variasi turun (anjing hampir semua wajah putih). Default 3 dipertahankan. |
 | E2 | lr 4e-4 | 30 | | | | |
 | E3 | T = 500 | 30 | | | | |

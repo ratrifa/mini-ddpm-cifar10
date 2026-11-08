@@ -5,7 +5,7 @@
 - **LLM:** Claude Opus 5.5 (Claude Code)
 - **Target Modul:** Noise schedule + forward process (`src/diffusion.py`)
 - **Tautan Sesi Chat / Ekspor:** _(lampirkan file hasil `/export`)_
-- **Commit terkait:** _(diisi setelah merge)_
+- **Commit terkait:** `f38385d`, `a5c79b8` (merge `ef50bb6`)
 
 ## KRONOLOGI PROMPT & RESPONS
 
@@ -13,14 +13,14 @@
 
 #### Prompt 1 — Membuka sesi
 - **Prompt Kelompok:** "Gua Satria, ketua Kelompok 14. Baca dulu memory proyek ini, terutama session-handoff.md, midterm-group-context.md, sama no-pull-requests.md, terus project-1/ROADMAP.md dan JOBDESK.md. Di sesi ini kita ngerjain Sesi 2: src/diffusion.py. Commit atas nama gua, pakai alur branch → merge lokal → push."
-- **Alasan Khusus:** _(draf, sesuaikan)_ LLM diminta membaca konteks proyek (pembagian tugas, roadmap, aturan commit) terlebih dahulu agar kode baru konsisten dengan modul Sesi 1 (`data.py`: rentang [-1, 1], shape `(B, 3, 32, 32)`) dan alur kerja kelompok.
+- **Alasan Khusus:** _(dirumuskan bersama LLM, disetujui Satria)_ LLM diminta membaca konteks proyek (pembagian tugas, roadmap, aturan commit) terlebih dahulu agar kode baru konsisten dengan modul Sesi 1 (`data.py`: rentang [-1, 1], shape `(B, 3, 32, 32)`) dan alur kerja kelompok.
 - **Output Model:** LLM merangkum status proyek, lalu sebelum menulis kode mengajukan dua pertanyaan desain: jenis noise schedule dan jumlah timestep T.
 
 #### Prompt 2 — Keputusan desain
 - **Pilihan Kelompok:**
   - Noise schedule: **Linear** (β dari 1e-4 ke 0.02), dibanding opsi cosine (Improved DDPM) atau keduanya.
   - Jumlah timestep: **T = 1000**, dibanding opsi T = 500 atau T = 300.
-- **Alasan Khusus:** _(draf, sesuaikan)_ Linear dengan T = 1000 adalah pengaturan asli paper DDPM (Ho et al., 2020) untuk CIFAR-10, sehingga mudah dijelaskan dan menjadi baseline. T tetap berupa argumen, jadi bisa diturunkan saat tuning di Sesi 8 bila sampling di Colab terlalu lambat.
+- **Alasan Khusus:** _(dirumuskan bersama LLM, disetujui Satria)_ Linear dengan T = 1000 adalah pengaturan asli paper DDPM (Ho et al., 2020) untuk CIFAR-10, sehingga mudah dijelaskan dan menjadi baseline. T tetap berupa argumen, jadi bisa diturunkan saat tuning di Sesi 8 bila sampling di Colab terlalu lambat.
 - **Output Model:** Kelas `Diffusion(timesteps=1000, beta_start=1e-4, beta_end=0.02)` yang menyimpan β, α = 1 − β, ᾱ (cumprod α), √ᾱ, dan √(1 − ᾱ), serta fungsi forward process:
   ```python
   def q_sample(self, x0, t, noise=None):
@@ -63,7 +63,8 @@ Tidak ada eror saat kode dijalankan. Hal yang diantisipasi sejak awal:
 
 #### Antisipasi 2 — MPS tidak mendukung float64
 - **Masalah potensial:** ᾱ adalah hasil perkalian 1000 bilangan, sehingga lebih presisi bila dihitung di float64, tetapi MPS tidak bisa memakai float64.
-- **Solusi:** Schedule dihitung di float64 lalu disimpan sebagai float32. _(draf: tambahkan pelajaran yang diambil)_
+- **Solusi:** Schedule dihitung di float64 lalu disimpan sebagai float32.
+- **Pelajaran:** _(dirumuskan bersama LLM, disetujui Satria)_ Perbedaan device memengaruhi kode, bukan hanya kecepatan: fitur yang jalan di CPU belum tentu jalan di MPS atau CUDA. Karena itu setiap modul diuji di CPU dan MPS sejak awal, sebelum dipakai di Colab.
 
 ## Ringkasan Sesi
 | Kriteria (ROADMAP Sesi 2) | Status |
