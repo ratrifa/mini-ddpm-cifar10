@@ -90,7 +90,7 @@ _(isi: diagram U-Net bila ada)_
 | EMA bobot | decay 0,999 (bobot EMA dipakai untuk sampling) |
 | Checkpoint | `last.pt` di Google Drive, otomatis resume |
 | Log | `loss_log.csv` (rata-rata per epoch), `loss_steps.csv` (per langkah) |
-| Hardware | Google Colab, GPU T4; run1 100 epoch ± 3,1 jam (± 105–119 detik per epoch) |
+| Hardware | Google Colab, GPU T4; run1 100 epoch ± 3,1 jam (± 101–114 detik per epoch) |
 
 ### 3.4 Sampling / reverse process (`Diffusion.sample`, `src/sample.py`)
 - Mulai dari noise murni x_T ~ N(0, I), lalu 1000 langkah dari t = T−1 ke 0.
