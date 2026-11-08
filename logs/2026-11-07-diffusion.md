@@ -4,7 +4,7 @@
 - **Pelaksana:** Satria Febry Andanu (Prompt Engineer & LLM Navigator · Training Loop & Hyperparameter Tuning)
 - **LLM:** Claude Opus 5.5 (Claude Code)
 - **Target Modul:** Noise schedule + forward process (`src/diffusion.py`)
-- **Tautan Sesi Chat / Ekspor:** _(lampirkan file hasil `/export`)_
+- **Tautan Sesi Chat / Ekspor:** _(terlampir pada berkas pengumpulan: `export-satria.txt`, ekspor `/export` sesi Claude Code Satria; tidak diunggah ke repo publik)_
 - **Commit terkait:** `f38385d`, `a5c79b8` (merge `ef50bb6`)
 
 ## KRONOLOGI PROMPT & RESPONS
