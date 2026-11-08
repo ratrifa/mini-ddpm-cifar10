@@ -11,8 +11,8 @@ Acuan urutan kerja Proyek 1 (Mini DDPM CIFAR-10). Sesi dikerjakan bergantian kar
 | 5 | Satria | `src/train.py` + `notebooks/train.ipynb`, uji coba training singkat | Loss turun, checkpoint tersimpan ke Google Drive | Colab |✅ |
 | 6 | Satria | Sampling (reverse process) | Gambar hasil generate keluar | Colab | ✅ |
 | 7 | Gifan | `src/visualize.py`: kurva loss + grid sampel per kelas | Grafik + grid siap dipakai di laporan | Laptop/Colab | ✅ |
-| 8 | Satria | Training penuh + tuning hyperparameter | Perbandingan hasil eksperimen tercatat | Colab | 🟨 |
-| 9 | Gifan | Kompilasi log + laporan + slide | Siap dikumpulkan | Laptop | ⬜ |
+| 8 | Satria | Training penuh + tuning hyperparameter | Perbandingan hasil eksperimen tercatat | Colab | ✅ |
+| 9 | Gifan | Kompilasi log + laporan + slide | Siap dikumpulkan | Laptop | 🟨 |
 
 Status: ⬜ belum · 🟨 berjalan · ✅ selesai
 
