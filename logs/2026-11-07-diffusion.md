@@ -5,7 +5,7 @@
 - **LLM:** Claude Opus 5.5 (Claude Code)
 - **Target Modul:** Noise schedule + forward process (`src/diffusion.py`)
 - **Tautan Sesi Chat / Ekspor:** _(lampirkan file hasil `/export`)_
-- **Commit terkait:** _(diisi setelah merge)_
+- **Commit terkait:** `f38385d`, `a5c79b8` (merge `ef50bb6`)
 
 ## KRONOLOGI PROMPT & RESPONS
 
