@@ -16,7 +16,7 @@ Bila upload dari laptop tidak memungkinkan, jalankan sekali training apa pun den
 
 Tidak perlu mengubah kode: `--data-root` sudah ada di `train.py`.
 
-## 1. Baseline (sedang berjalan)
+## 1. Baseline (selesai)
 
 | | Nilai |
 |---|---|
@@ -69,7 +69,7 @@ Semua eksperimen dibandingkan dengan run ini.
 
 | Urutan | Eksperimen | Waktu | Kumulatif |
 |---|---|---|---|
-| — | Baseline `run1` (berjalan) | ± 3 jam | ± 3 jam |
+| — | Baseline `run1` (selesai) | ± 3 jam 8 menit | ± 3 jam |
 | 1 | E1 guidance sweep | ≤ 15 menit | ± 3,25 jam |
 | 2 | E2 lr 4e-4 | ± 1 jam | ± 4,25 jam |
 | 3 | E3 T = 500 (opsional) | ± 1 jam | ± 5,25 jam |
@@ -80,7 +80,28 @@ Colab gratis tidak menjamin durasi sesi dan bisa memutus runtime. Bila terputus:
 
 | ID | Perubahan dari baseline | Epoch | Loss epoch terakhir | Loss epoch 30 | Waktu | Catatan visual |
 |---|---|---|---|---|---|---|
-| run1 | — | 100 | | | | |
+| run1 | — | 100 | 0.0309 | 0.0327 | ± 3 jam 8 menit (11.337 detik, T4) | Guidance 3: semua kelas jelas, kucing/anjing paling lemah (lihat E1) |
 | E1 | guidance 0 / 1 / 3 / 5 | 100 | — | — | 10 menit 10 detik, 4 skala × 80 gambar, di laptop (MPS) karena kuota GPU Colab habis | **0:** objek terbentuk tapi kelas acak · **1:** sebagian besar sesuai kelas, ada yang meleset (objek merah di baris kuda, kucing kabur) · **3:** semua baris jelas sesuai kelas; kucing/anjing paling lemah · **5:** komposisi sama dengan 3 (seed sama), warna lebih jenuh, variasi turun (anjing hampir semua wajah putih). Default 3 dipertahankan. |
-| E2 | lr 4e-4 | 30 | | | | |
-| E3 | T = 500 | 30 | | | | |
+| E2 | lr 4e-4 | 30 | 0.0325 | 0.0325 | ± 59 menit (3.543,6 detik, T4, akun Google kedua) + sampling 2 menit 34 detik (laptop MPS) | Guidance 3: semua baris sesuai kelas; burung paling lemah, wajah kucing/anjing sebagian tidak utuh. **Tidak setara** dengan run1 (epoch 30 vs 100). |
+| E3 | T = 500 | — | — | — | — | **Tidak dijalankan** (lihat di bawah) |
+
+### Perbandingan loss per epoch: run1 (lr 2e-4) vs E2 (lr 4e-4)
+
+Diambil dari kolom `loss` di `loss_log.csv` masing-masing run (4 desimal).
+
+| Epoch | 1 | 2 | 3 | 5 | 10 | 15 | 20 | 25 | 30 |
+|---|---|---|---|---|---|---|---|---|---|
+| run1 | 0.1106 | 0.0498 | 0.0442 | 0.0387 | 0.0354 | 0.0345 | 0.0332 | 0.0324 | 0.0327 |
+| E2 | 0.0951 | 0.0451 | 0.0399 | 0.0375 | 0.0345 | 0.0334 | 0.0333 | 0.0333 | 0.0325 |
+
+- lr 4e-4 menurunkan loss lebih cepat sampai sekitar epoch 15. Setelah itu kedua run menyatu di sekitar 0.0325.
+- Di epoch 30 selisihnya ± 0,7%, masih di dalam fluktuasi loss antar-epoch (run1 sendiri naik dari 0.0324 di epoch 25 ke 0.0327 di epoch 30).
+- Kesimpulan: dalam 30 epoch, lr 4e-4 tidak memberi loss akhir yang lebih baik dan juga tidak membuat training tidak stabil. Keuntungannya hanya di epoch awal.
+
+**Caveat perbandingan visual:** grid E2 (epoch 30) hanya bisa dibandingkan dengan grid run1 epoch 100, karena `last.pt` selalu ditimpa sehingga checkpoint run1 epoch 30 tidak ada. Perbandingan yang adil hanya loss per epoch di atas.
+
+### E3 tidak dijalankan
+
+- Kuota GPU Colab akun utama sudah habis setelah run1, dan E2 memakai akun Google kedua.
+- Masalah ᾱ_T pada T = 500 (lihat bagian E3 di atas) membuat hasilnya sulit dibaca tanpa argumen `--beta-end`.
+- Di laptop (MPS), 30 epoch butuh ± 2 jam 40 menit (dari cek kecepatan sebelum E2: ± 0,82 detik/langkah).
