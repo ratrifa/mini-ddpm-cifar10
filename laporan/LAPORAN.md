@@ -9,14 +9,18 @@ CAK4KBB3 Generative AI 2026-1 · Kelompok 14
 Repositori: https://github.com/ratrifa/mini-ddpm-cifar10
 LLM: Claude Opus 5.5 (Claude Code)
 
-> Status: **draf**. Bagian Hasil (4.1–4.3) sudah diisi dari run1, E1, dan E2; bagian bertanda _(isi)_ dilengkapi kelompok.
+> Status: **draf**. Bagian bertanda _(draf LLM dari sesi orchestrator, belum disetujui kelompok)_ perlu dibaca, disesuaikan, dan disetujui kelompok sebelum dikumpulkan.
 
 ---
 
 ## 1. Pendahuluan
 
 ### 1.1 Latar belakang
-_(isi: model generatif belajar distribusi data P(x), dan versi conditional belajar P(x | y). Hubungkan dengan materi GEN01.)_
+_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+
+Model diskriminatif mempelajari P(y | x): diberi gambar, tebak labelnya. Model generatif mempelajari distribusi data itu sendiri, P(x), sehingga bisa mengambil sampel x baru yang mirip data asli tetapi tidak ada di dataset (GEN01). Versi *conditional* mempelajari P(x | y): pengguna memilih kelas y, lalu model membuat gambar dari kelas tersebut.
+
+Beberapa keluarga model generatif yang umum adalah VAE, GAN, model autoregresif, dan model difusi. Model difusi belajar membalik proses perusakan data secara bertahap: data dirusak sedikit demi sedikit dengan noise Gaussian sampai menjadi noise murni, lalu jaringan saraf dilatih untuk menghilangkan noise itu langkah demi langkah. Objektif trainingnya sederhana (MSE pada noise) dan tidak membutuhkan training adversarial seperti GAN, sehingga lebih stabil untuk dikerjakan dari nol.
 
 ### 1.2 Tujuan
 - Membangun Denoising Diffusion Probabilistic Model (DDPM; Ho et al., 2020) skala kecil dari nol dengan PyTorch melalui kolaborasi dengan LLM (vibe coding), tanpa menyalin kode tutorial.
@@ -24,10 +28,19 @@ _(isi: model generatif belajar distribusi data P(x), dan versi conditional belaj
 - Mendokumentasikan seluruh interaksi dengan LLM: inisiasi → penanganan eror → optimasi.
 
 ### 1.3 Alasan memilih DDPM conditional pada CIFAR-10
-_(isi: alasan kelompok. Catatan: Kelompok 4 sudah memakai Fashion-MNIST, sehingga kelompok ini memakai gambar berwarna.)_
+_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+
+- **Gambar berwarna.** Kelompok 4 sudah memakai Fashion-MNIST (grayscale 28×28). CIFAR-10 berwarna (3 channel) dan berisi objek dengan latar belakang, sehingga lebih menantang dan berbeda dari kelompok lain.
+- **Masih realistis untuk Colab gratis.** Resolusi 32×32 membuat U-Net ±4,6 juta parameter cukup, dan training 100 epoch selesai ±3 jam di GPU T4.
+- **Ada label kelas.** Dengan 10 kelas berlabel, model bisa dibuat *class-conditional* dan pengaruh classifier-free guidance bisa ditunjukkan langsung (eksperimen E1).
+- **DDPM cocok untuk "from scratch".** Komponennya (noise schedule, U-Net, loss MSE, sampling) bisa ditulis bertahap per modul dan diuji satu per satu, sesuai alur kerja vibe coding per sesi.
 
 ### 1.4 Hubungan dengan materi kuliah
-_(isi, opsional)_ Jembatan konsep: ELBO pada VAE (GEN06) → bound variasional DDPM; sampling dari prior N(0, I) seperti pada VAE; U-Net sebagai encoder–decoder CNN (02A) dengan residual block seperti ResNet (GEN02).
+_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+
+- **VAE (GEN06) → DDPM.** VAE dilatih dengan memaksimalkan ELBO dan membuat gambar dengan mengambil sampel dari prior N(0, I) lalu men-decode-nya. DDPM bisa dilihat sebagai VAE bertingkat dengan T = 1000 variabel laten berukuran sama dengan gambar. Bedanya, "encoder"-nya (forward process) tetap dan tidak dilatih. Batas variasionalnya disederhanakan oleh Ho et al. (2020) menjadi MSE antara noise asli dan noise prediksi. Sampling juga dimulai dari N(0, I).
+- **Encoder–decoder (02A).** U-Net adalah encoder–decoder CNN: resolusi diperkecil untuk menangkap konteks, lalu diperbesar lagi ke ukuran asli. Skip connection membawa detail dari encoder ke decoder.
+- **CNN dan ResNet (GEN02).** Tiap blok U-Net adalah residual block (output = input + F(input)) seperti pada ResNet, agar jaringan yang dalam tetap mudah dilatih.
 
 ---
 
@@ -50,7 +63,7 @@ _(isi, opsional)_ Jembatan konsep: ELBO pada VAE (GEN06) → bound variasional D
 | `RandomHorizontalFlip()` | p = 0.5, **hanya data train** | Versi cermin tetap realistis. Flip vertikal tidak dipakai karena model generatif akan ikut belajar menghasilkan gambar terbalik |
 | `DataLoader` | batch 128; shuffle + `drop_last` untuk train | Ukuran batch tetap selama training |
 
-Keluaran: gambar `(B, 3, 32, 32)` di [-1, 1] dan label `(B,)`. _(isi: tambahan penjelasan bila perlu)_
+Keluaran: gambar `(B, 3, 32, 32)` di [-1, 1] dan label `(B,)` bernilai 0–9. Label dipakai sebagai kondisi y untuk U-Net. Data test tidak dipakai untuk training, hanya untuk visualisasi dataset dan forward process.
 
 ---
 
@@ -68,7 +81,12 @@ Keluaran: gambar `(B, 3, 32, 32)` di [-1, 1] dan label `(B,)`. _(isi: tambahan p
 
 *Gambar 2. Forward process pada satu gambar per kelas dengan noise tetap. √ᾱ_t (sisa porsi sinyal asli) turun dari 1.00 ke 0.01. Objek masih jelas di t=100, samar di t=300, dan hilang di t ≥ 700.*
 
-_(isi: interpretasi kelompok atas gambar ini)_
+_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+
+- Sinyal tidak hilang secara linear terhadap t. Di t = 100 gambar masih hampir utuh (√ᾱ = 0,95), tetapi antara t = 200 dan t = 500 informasi hilang dengan cepat.
+- Mulai t ≈ 700 gambar sudah tidak bisa dibedakan dari noise murni. Di t = 999, √ᾱ_T ≈ 0,006 (ᾱ_T ≈ 4·10⁻⁵). Ini yang membenarkan sampling dimulai dari N(0, I): x_T memang praktis berupa noise murni.
+- Model harus belajar menghilangkan noise di semua tingkat. Pada t kecil tugasnya memperbaiki detail halus, sedangkan pada t besar model harus "mengarang" bentuk global dari hampir nol informasi. Di sinilah label kelas paling berperan.
+- Dengan schedule linear, cukup banyak langkah akhir yang isinya hampir sama-sama noise. Ini salah satu alasan munculnya cosine schedule (Nichol & Dhariwal, 2021), yang dicatat sebagai pengembangan di 4.4.
 
 ### 3.2 U-Net (`src/model.py`)
 - Fungsi: memprediksi noise ε dari input (x_t, t, y).
@@ -78,7 +96,20 @@ _(isi: interpretasi kelompok atas gambar ini)_
 - Class embedding: `nn.Embedding(11, 256)`, berisi 10 kelas ditambah 1 token "tanpa kelas" untuk classifier-free guidance. Embedding waktu dan kelas dijumlahkan, lalu ditambahkan per channel di tiap ResBlock.
 - Jumlah parameter: ±4,6 juta.
 
-_(isi: diagram U-Net bila ada)_
+```
+x_t (3×32×32) ──conv──▶ 64×32×32
+  encoder                                            decoder
+  [32×32] 2 ResBlock, 64 ch ───────── skip ───────▶ concat → 2 ResBlock, 64 ch  ──▶ conv ──▶ ε̂ (3×32×32)
+     │ conv stride 2                                     ▲ upsample ×2
+  [16×16] 2 ResBlock, 128 ch ──────── skip ───────▶ concat → 2 ResBlock, 128 ch
+     │ conv stride 2                                     ▲ upsample ×2
+  [ 8×8 ] 2 ResBlock, 128 ch ──────── skip ───────▶ concat → 2 ResBlock, 128 ch
+     └──────────▶ middle: 2 ResBlock, 128 ch ───────────┘
+
+emb = MLP(sinusoidal(t)) + Embedding(y)   (dimensi 256, y = 10 berarti "tanpa kelas")
+emb ditambahkan per channel di setiap ResBlock.
+```
+*Diagram U-Net, disusun dari `src/model.py`.*
 
 ### 3.3 Training (`src/train.py`, `notebooks/train.ipynb`)
 | Komponen | Nilai |
@@ -184,30 +215,59 @@ _(draf LLM, disetujui Gifan)_
 | Satria Febry Andanu (Ketua) | Prompt Engineer & LLM Navigator · Training Loop & Hyperparameter Tuning | `src/diffusion.py`, `src/model.py`, `src/train.py`, `src/sample.py`, `notebooks/train.ipynb`, tuning |
 | Gifan Apriadi | Data Pipeline & Preprocessing · Lead Documentarian & Error Handler | `src/data.py`, `src/visualize.py`, `src/plot_loss.py`, kompilasi log, laporan, slide |
 
-Alur kerja: tiap modul dikerjakan di branch sendiri (git worktree terpisah per anggota), dicek, lalu di-merge ke `main` dengan `--no-ff`. Rincian ada di [JOBDESK.md](../JOBDESK.md) dan [ROADMAP.md](../ROADMAP.md). _(isi: ringkasan jumlah commit per anggota)_
+Alur kerja: tiap modul dikerjakan di branch sendiri (git worktree terpisah per anggota), dicek, lalu di-merge ke `main` dengan `--no-ff`. Rincian ada di [JOBDESK.md](../JOBDESK.md) dan [ROADMAP.md](../ROADMAP.md). Riwayat `main` per 8 November 2026 berisi 32 commit non-merge atas akun `ratrifa` (Satria, termasuk commit koordinasi seperti ROADMAP dan JOBDESK), 15 commit non-merge atas nama Gifan Apriadi, dan 24 commit merge.
 
 ---
 
 ## 6. Log Interaksi LLM
 | Sesi | Modul | Pelaksana | Log | Ekspor chat |
 |---|---|---|---|---|
-| 1 | Data pipeline + grid dataset | Gifan | [2026-11-07-data-pipeline.md](../logs/2026-11-07-data-pipeline.md) | _(isi)_ |
-| 2 | Noise schedule + forward process | Satria | [2026-11-07-diffusion.md](../logs/2026-11-07-diffusion.md) | _(isi)_ |
-| 3, 7 | Visualisasi forward process, kurva loss, grid sampel | Gifan | [2026-11-07-visualize.md](../logs/2026-11-07-visualize.md) | _(isi)_ |
-| 4 | U-Net + embedding | Satria | [2026-11-07-model.md](../logs/2026-11-07-model.md) | _(isi)_ |
-| 5 | Training loop + notebook | Satria | [2026-11-07-train.md](../logs/2026-11-07-train.md) | _(isi)_ |
-| 6 | Sampling | Satria | [2026-11-07-sampling.md](../logs/2026-11-07-sampling.md) | _(isi)_ |
-| 8 | Training penuh + tuning (run1, E1, E2) | Satria | [2026-11-08-tuning.md](../logs/2026-11-08-tuning.md) | _(isi)_ |
+| 1 | Data pipeline + grid dataset | Gifan | [2026-11-07-data-pipeline.md](../logs/2026-11-07-data-pipeline.md) | ekspor sesi orchestrator |
+| 2 | Noise schedule + forward process | Satria | [2026-11-07-diffusion.md](../logs/2026-11-07-diffusion.md) | `export-satria.txt` |
+| 3, 7 | Visualisasi forward process, kurva loss, grid sampel | Gifan | [2026-11-07-visualize.md](../logs/2026-11-07-visualize.md) | `export-gifan.txt` |
+| 4 | U-Net + embedding | Satria | [2026-11-07-model.md](../logs/2026-11-07-model.md) | `export-satria.txt` |
+| 5 | Training loop + notebook | Satria | [2026-11-07-train.md](../logs/2026-11-07-train.md) | `export-satria.txt` |
+| 6 | Sampling | Satria | [2026-11-07-sampling.md](../logs/2026-11-07-sampling.md) | `export-satria.txt` |
+| 8 | Training penuh + tuning (run1, E1, E2) | Satria | [2026-11-08-tuning.md](../logs/2026-11-08-tuning.md) | `export-satria.txt` + ekspor sesi orchestrator |
 
-_(isi: ringkasan pola prompt, eror penting, dan pelajaran yang diambil)_
+File ekspor chat dilampirkan pada berkas pengumpulan, tidak diunggah ke repo publik.
+
+_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+
+**Pola prompt.**
+- Prompt pembuka tiap sesi menyebut siapa yang bekerja, modul target, dan batasan (worktree sendiri, jangan menyentuh file anggota lain, commit atas nama sendiri).
+- Untuk keputusan desain, LLM diminta bertanya dulu sebelum menulis kode. Kelompok lalu memilih opsi, misalnya guidance scale default 3,0 dan format `loss_steps.csv`.
+- Pesan eror dan output Colab ditempel utuh, bukan diringkas.
+- Selama training berjalan, prompt berisi daftar tugas berurutan yang tidak menyentuh kode training.
+- Koordinasi antarsesi dilakukan oleh satu sesi orchestrator yang me-review dan me-merge pekerjaan anggota.
+
+**Eror dan masalah penting** (rincian di log masing-masing):
+- Unduhan CIFAR-10 sangat lambat, baik di laptop maupun di Colab (±30 menit). Solusinya, dataset disimpan sekali di Google Drive dan dipakai ulang lewat `--data-root`.
+- Format log loss dari `train.py` (per epoch) tidak cocok dengan fungsi plot Gifan (per langkah). `train.py` lalu ditambah `loss_steps.csv`.
+- Kuota GPU Colab gratis habis setelah training penuh. Sampling dipindah ke laptop (MPS) tanpa mengubah kode, dan E2 dijalankan dengan akun Google kedua.
+- Folder Drive yang di-share tidak muncul di `MyDrive` akun kedua. Solusinya, tambahkan shortcut lalu mount ulang.
+- LLM salah memperkirakan jumlah parameter U-Net. Angka yang benar (±4,6 juta) didapat dengan menghitung langsung dari model.
+- Dua sesi paralel sempat memegang informasi status yang tidak sesuai dengan repo. Pelajarannya: status dicek langsung dari riwayat Git.
+
+**Pelajaran.**
+- Klaim LLM, seperti jumlah parameter atau status merge, harus diverifikasi dengan menjalankan kode atau mengecek Git.
+- Antarmuka antarmodul (shape tensor, format CSV dan `.pt`) perlu disepakati sejak awal karena modul dikerjakan oleh orang berbeda.
+- Sumber daya GPU gratis terbatas, jadi eksperimen yang hanya butuh sampling dijalankan di laptop dan GPU disimpan untuk training.
 
 ---
 
 ## 7. Kesimpulan
-_(isi)_
+_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+
+- Kelompok berhasil membangun DDPM class-conditional dari nol (±4,6 juta parameter) bersama LLM, dari data pipeline sampai sampling, dalam modul-modul yang dikerjakan dan di-review per sesi.
+- Training 100 epoch di Colab T4 (±3,1 jam) menurunkan loss rata-rata per epoch dari 0,1106 ke 0,0309. Model menghasilkan gambar 32×32 yang dapat dikenali untuk kesepuluh kelas CIFAR-10 pada guidance w = 3.
+- Classifier-free guidance terbukti mengendalikan kelas: w = 0 menghasilkan kelas acak, w = 3 menghasilkan kelas yang jelas, dan w = 5 menambah konsistensi dengan mengorbankan variasi.
+- Menaikkan learning rate ke 4e-4 hanya mempercepat penurunan loss di ±15 epoch pertama, tanpa memperbaiki loss akhir.
+- Keterbatasan utama adalah tidak adanya metrik kuantitatif (FID) dan perbandingan visual yang tidak setara antara E2 dan run1. Pengembangan berikutnya: cosine schedule, self-attention, model lebih besar, dan evaluasi FID.
 
 ## Referensi
 1. J. Ho, A. Jain, P. Abbeel. *Denoising Diffusion Probabilistic Models*. NeurIPS 2020.
 2. J. Ho, T. Salimans. *Classifier-Free Diffusion Guidance*. NeurIPS 2021 Workshop.
 3. A. Krizhevsky. *Learning Multiple Layers of Features from Tiny Images* (CIFAR-10), 2009.
-4. Materi kuliah CAK4KBB3: GEN01 Introduction, 02A Encoder-Decoder, GEN02 Review RNN/CNN, GEN06 VAE.
+4. A. Nichol, P. Dhariwal. *Improved Denoising Diffusion Probabilistic Models*. ICML 2021.
+5. Materi kuliah CAK4KBB3: GEN01 Introduction, 02A Encoder-Decoder, GEN02 Review RNN/CNN, GEN06 VAE.
