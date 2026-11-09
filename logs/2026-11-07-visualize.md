@@ -13,12 +13,12 @@
 
 #### Prompt 1 — Pembukaan sesi dan target Sesi 3 (dihentikan)
 - **Prompt Kelompok:** "Gua Gifan. Baca dulu memory proyek ini, terutama session-handoff.md, midterm-group-context.md, sama no-pull-requests.md. Sesi Satria lagi jalan paralel di worktree project-1-satria, jadi jangan sentuh folder itu atau folder project-1. Bikin worktree baru buat gua di midterm-project/project-1-gifan dari main yang terbaru (git pull dulu). Semua commit di sesi ini atas nama gua. Kita ngerjain Sesi 3: visualisasi forward process pakai Diffusion.q_sample dari src/diffusion.py."
-- **Alasan Khusus:** Sesi Satria sedang jalan paralel, jadi saya perlu worktree sendiri supaya tidak bentrok di Git. Commit atas nama saya supaya pembagian kerja terlihat di riwayat Git. `q_sample` disebut langsung supaya visualisasinya memakai rumus yang sama dengan training, bukan rumus yang ditulis ulang. _(draf LLM, disetujui Gifan)_
+- **Alasan Khusus:** Sesi Satria sedang jalan paralel, jadi saya perlu worktree sendiri supaya tidak bentrok di Git. Commit atas nama saya supaya pembagian kerja terlihat di riwayat Git. `q_sample` disebut langsung supaya visualisasinya memakai rumus yang sama dengan training, bukan rumus yang ditulis ulang. _(dirumuskan bersama LLM, disetujui Gifan)_
 - **Output Model:** LLM membaca memory proyek, mengambil versi terbaru dari GitHub (`git fetch`; `main` lokal sudah sama dengan `origin/main` @ `30a1ad1`), lalu membuat worktree `project-1-gifan` di branch baru. Folder `project-1` dan `project-1-satria` tidak diubah. Sebelum kode ditulis, prompt ini dihentikan dan diganti Prompt 2.
 
 #### Prompt 2 — Ganti target: log Sesi 1 + kurva loss + grid sampel
 - **Prompt Kelompok:** "... Sesi 2 (diffusion.py) belum di-merge, jadi sekarang kita ngerjain yang nggak butuh file itu dulu: lengkapi log sesi 1 di logs/2026-11-07-data-pipeline.md, terus tulis fungsi kurva loss + grid sampel di src/visualize.py, dites pakai data palsu." _(bagian awal sama dengan Prompt 1)_
-- **Alasan Khusus:** Saya kira `diffusion.py` belum di-merge, jadi saya kerjakan dulu bagian yang tidak bergantung pada file itu. Data palsu dipakai supaya fungsinya sudah teruji sebelum hasil training ada. _(draf LLM, disetujui Gifan)_
+- **Alasan Khusus:** Saya kira `diffusion.py` belum di-merge, jadi saya kerjakan dulu bagian yang tidak bergantung pada file itu. Data palsu dipakai supaya fungsinya sudah teruji sebelum hasil training ada. _(dirumuskan bersama LLM, disetujui Gifan)_
 - **Output Model:**
   - Branch diganti nama menjadi `feat/visualize-results` agar sesuai isi pekerjaan.
   - `plot_loss_curve(losses, out_path, window=100)`: loss per step digambar samar, ditambah garis rata-rata bergerak 100 step, dengan sumbu y logaritmik. Alasan dari LLM: loss DDPM per step sangat berisik karena t dan noise diacak tiap batch, dan loss turun cepat di awal lalu melandai.
@@ -31,13 +31,13 @@
 
 #### Prompt 3 — Finalisasi log Sesi 1
 - **Prompt Kelompok:** _(jawaban pilihan atas pertanyaan LLM)_ Alasan draf di log Sesi 1: "Draf udah sesuai"; file `/export`: "Belum ada".
-- **Alasan Khusus:** Isi draf log Sesi 1 sudah sesuai dengan yang saya kerjakan. File `/export` memang belum saya buat. _(draf LLM, disetujui Gifan)_
+- **Alasan Khusus:** Isi draf log Sesi 1 sudah sesuai dengan yang saya kerjakan. File `/export` memang belum saya buat. _(dirumuskan bersama LLM, disetujui Gifan)_
 - **Output Model:** Tanda "(draf, sesuaikan)" dihapus dari tiga bagian Alasan Khusus di `logs/2026-11-07-data-pipeline.md`. Tautan `/export` dan pelajaran Masalah 2 masih kosong.
 - **Commit:** `d40b39d`
 
 #### Prompt 4 — Lanjut Sesi 3
 - **Prompt Kelompok:** _(Gifan menempelkan transkrip sesi koordinator tanpa kalimat tambahan. Transkrip itu menyebut Sesi 2 dan Sesi 4 sudah di-merge ke `main`, sehingga Sesi 3 bisa langsung dikerjakan.)_
-- **Alasan Khusus:** Transkrip koordinator sudah memuat status terbaru (Sesi 2 dan 4 sudah di-merge), jadi cukup ditempel tanpa penjelasan ulang. _(draf LLM, disetujui Gifan)_
+- **Alasan Khusus:** Transkrip koordinator sudah memuat status terbaru (Sesi 2 dan 4 sudah di-merge), jadi cukup ditempel tanpa penjelasan ulang. _(dirumuskan bersama LLM, disetujui Gifan)_
 - **Output Model:** LLM melanjutkan target Sesi 3 dari Prompt 1:
   - `show_forward_process(images, diffusion, timesteps, out_path, row_labels)`: tiap baris satu gambar. Kolom pertama gambar asli x0, lalu x_t pada t = 0, 100, 200, 300, 400, 500, 700, 999, yang dibuat dengan `diffusion.q_sample`. Satu noise dipakai untuk semua kolom pada gambar yang sama, sehingga perbedaan antarkolom hanya berasal dari t. Judul kolom mencantumkan √ᾱ_t (sisa porsi sinyal asli).
   - Blok `python src/visualize.py [lokasi_data]` membuat grid untuk gambar test pertama dari tiap kelas dengan seed 0, sehingga hasilnya bisa diulang.
@@ -48,7 +48,7 @@
 
 #### Prompt 5 — Pekerjaan selama training penuh berjalan
 - **Prompt Kelompok:** _(ditempel; disusun bersama sesi koordinasi)_ "Selama training penuh jalan di Colab, kerjain ini berurutan. Tiap butir selesai, tes dulu, commit di branch sendiri atas nama gua, terus lanjut. Jangan sentuh train.py, data.py, diffusion.py, model.py. 1. Bikin cara buat baca loss_steps.csv terus gambar kurva loss pakai plot_loss_curve. Tes pakai file trial di <path loss_steps.csv>, dan jelasin ke gua kenapa pakai rata-rata bergerak dan sumbu log. 2. Bikin kerangka laporan akhir Proyek 1 sesuai panduan dosen: pendahuluan, dataset, arsitektur DDPM (forward process, U-Net, training, sampling), pembagian tugas, daftar log. Pakai gambar di outputs/, bagian hasil dikosongin dulu. 3. Dari kerangka itu, susun kerangka slide sekitar 10–12 slide, plus daftar pertanyaan yang kemungkinan ditanya dosen soal bagian gua (data pipeline dan visualisasi). 4. Terakhir, tunjukin satu per satu bagian "(isi sendiri)" di log sesi 3/7. Berhenti dan tanya gua di tiap bagian, gua jawab pakai kata-kata gua sendiri. Grid sampel berlabel nunggu format .pt dari sesi Satria. Kalau udah semua, kabarin orchestrator buat di-merge."
-- **Alasan Khusus:** Training penuh makan waktu berjam-jam, jadi waktu tunggunya dipakai untuk pekerjaan yang tidak menyentuh kode training. Urutannya dibuat supaya tiap butir dites dan di-commit terpisah. _(draf LLM, disetujui Gifan)_
+- **Alasan Khusus:** Training penuh makan waktu berjam-jam, jadi waktu tunggunya dipakai untuk pekerjaan yang tidak menyentuh kode training. Urutannya dibuat supaya tiap butir dites dan di-commit terpisah. _(dirumuskan bersama LLM, disetujui Gifan)_
 - **Output Model:**
   - Butir 1: `read_step_losses(csv_path)` di `visualize.py` membaca kolom `step,epoch,loss`. Bila satu step tercatat dua kali (Colab putus di antara penulisan CSV dan penyimpanan checkpoint), yang dipakai nilai terakhir. Skrip `src/plot_loss.py <loss_steps.csv> --out ... --window ...` memanggil `plot_loss_curve`. Commit `a37ceaa`.
   - Butir 2: `laporan/LAPORAN.md`, kerangka laporan berisi pendahuluan, dataset dan pipeline, arsitektur (forward process, U-Net, training, sampling), hasil (kosong), pembagian tugas, daftar log, dan referensi. Angka arsitektur diambil dari kode (±4,6 juta parameter dihitung langsung). Commit `e198d8c`.
@@ -62,7 +62,7 @@ Tidak ada eror saat kode dijalankan. Masalah yang ditemukan selama sesi:
 #### Masalah 1 — Informasi status Sesi 2 tidak sesuai kondisi repo
 - **Gejala:** Prompt 2 menyebut Sesi 2 belum di-merge, tetapi riwayat Git menunjukkan `diffusion.py` sudah masuk `main` di merge `ef50bb6`, dan Sesi 4 juga sudah masuk di `30a1ad1`.
 - **Penyebab:** Dua sesi Claude berjalan paralel, sehingga informasi dari satu sesi bisa tertinggal dari kondisi repo yang sebenarnya.
-- **Analisis & Solusi Kelompok:** LLM tetap mengerjakan permintaan Prompt 2 sambil memberi tahu kondisi sebenarnya, lalu Sesi 3 dikerjakan di sesi yang sama. Pelajaran: kalau dua sesi jalan paralel, status pekerjaan harus dicek langsung ke riwayat Git, bukan diambil dari ingatan atau sesi lain. _(draf LLM, disetujui Gifan)_
+- **Analisis & Solusi Kelompok:** LLM tetap mengerjakan permintaan Prompt 2 sambil memberi tahu kondisi sebenarnya, lalu Sesi 3 dikerjakan di sesi yang sama. Pelajaran: kalau dua sesi jalan paralel, status pekerjaan harus dicek langsung ke riwayat Git, bukan diambil dari ingatan atau sesi lain. _(dirumuskan bersama LLM, disetujui Gifan)_
 
 #### Masalah 2 — Dataset tidak ada di folder worktree
 - **Gejala:** CIFAR-10 hanya tersimpan di `project-1/data/`. Folder `data/` diabaikan Git, sehingga worktree baru tidak memilikinya. Blok uji lama memakai `root="./data"` dengan `download=True`, yang akan mengunduh ulang ±170 MB (unduhan Sesi 1 butuh lebih dari 10 menit).
@@ -72,7 +72,7 @@ Tidak ada eror saat kode dijalankan. Masalah yang ditemukan selama sesi:
 
 #### Prompt 6 — Kurva loss dan grid sampel dari hasil training asli (run1)
 - **Prompt Kelompok:** "Bikin kurva loss dari checkpoints/run1/loss_steps.csv dan grid sampel berlabel dari outputs/run1/samples_g*.pt, simpan di outputs/. Terus isi bagian "(isi sendiri)" di log visualize, lalu commit."
-- **Alasan Khusus:** Keempat guidance scale dibuat grid-nya supaya pengaruh classifier-free guidance terlihat di laporan: w=0 tanpa kondisi, dan makin besar w, kelasnya makin jelas. _(draf LLM, disetujui Gifan)_
+- **Alasan Khusus:** Keempat guidance scale dibuat grid-nya supaya pengaruh classifier-free guidance terlihat di laporan: w=0 tanpa kondisi, dan makin besar w, kelasnya makin jelas. _(dirumuskan bersama LLM, disetujui Gifan)_
 - **Commit:** `115d87b` (gambar); log ini menyusul.
 - **Konteks:** Training run1 (100 epoch, 39.000 step, Colab T4) dan sampling 4 guidance scale (w = 0, 1, 3, 5; dijalankan di laptop karena kuota GPU Colab habis) dikerjakan di sesi Satria/orchestrator. File hasilnya ada di folder `project-1` dan tidak masuk Git.
 - **Output Model:**

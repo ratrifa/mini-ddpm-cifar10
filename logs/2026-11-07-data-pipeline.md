@@ -59,7 +59,7 @@ Tidak ada eror saat kode dijalankan. Masalah yang ditemukan selama sesi:
 - **Gejala:** `outputs/dataset_samples.png` tidak muncul di `git status`.
 - **Penyebab:** `.gitignore` mengabaikan seluruh isi `outputs/` (`outputs/*`), padahal folder itu dimaksudkan untuk menyimpan gambar hasil laporan.
 - **Prompt Perbaikan ke LLM:** "benerin gitignore terus commit atas nama gifan"
-- **Analisis & Solusi Kelompok:** Menambahkan pengecualian `!outputs/*.png` sehingga file gambar ter-track, sementara file lain di `outputs/` tetap diabaikan. _(draf: tambahkan pelajaran yang diambil)_
+- **Analisis & Solusi Kelompok:** Menambahkan pengecualian `!outputs/*.png` sehingga file gambar ter-track, sementara file lain di `outputs/` tetap diabaikan.
 
 ## Ringkasan Sesi
 | Kriteria (ROADMAP Sesi 1) | Status |
