@@ -4,7 +4,7 @@
 - **Pelaksana:** Gifan Apriadi (Data Pipeline & Preprocessing)
 - **LLM:** Claude Opus 5.5 (Claude Code)
 - **Target Modul:** Data pipeline CIFAR-10 (`src/data.py`) dan visualisasi contoh dataset (`src/visualize.py`)
-- **Tautan Sesi Chat / Ekspor:** _(Sesi 1 berlangsung di sesi Claude Code awal sebelum sesi dipisah per anggota, yaitu sesi yang kemudian menjadi orchestrator; ekspor sesi orchestrator menyusul)_
+- **Tautan Sesi Chat / Ekspor:** _(Sesi 1 berlangsung di sesi Claude Code awal sebelum sesi dipisah per anggota, yaitu sesi yang kemudian menjadi orchestrator; ekspor sesi orchestrator terlampir sebagai `export-orchestrator.pdf`)_
 - **Commit terkait:** `ce99dc8`, `e45bbef` (merge `850a393`)
 
 ## KRONOLOGI PROMPT & RESPONS

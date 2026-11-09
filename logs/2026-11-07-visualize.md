@@ -4,7 +4,7 @@
 - **Pelaksana:** Gifan Apriadi (Data Pipeline & Preprocessing · Lead Documentarian)
 - **LLM:** Claude Opus 5.5 (Claude Code), sesi terpisah dari sesi Satria (git worktree `project-1-gifan`)
 - **Target Modul:** Visualisasi forward process (ROADMAP Sesi 3) dan kode kurva loss + grid sampel per kelas (ROADMAP Sesi 7, diuji dengan data palsu) di `src/visualize.py`; finalisasi log Sesi 1
-- **Tautan Sesi Chat / Ekspor:** _(terlampir pada berkas pengumpulan: `export-gifan.txt`, ekspor `/export` sesi Claude Code Gifan; tidak diunggah ke repo publik)_
+- **Tautan Sesi Chat / Ekspor:** _(terlampir pada berkas pengumpulan: `export-gifan.pdf`, ekspor `/export` sesi Claude Code Gifan; tidak diunggah ke repo publik)_
 - **Commit terkait:** `b01329c`, `d40b39d`, `53ff8a2`, `a37ceaa`, `e198d8c`, `7a6d716`, `115d87b` (merge ke `main`: `3b98a16`, `8fa496b`, oleh sesi orchestrator)
 
 ## KRONOLOGI PROMPT & RESPONS

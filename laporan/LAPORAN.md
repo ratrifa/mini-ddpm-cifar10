@@ -6,17 +6,17 @@ CAK4KBB3 Generative AI 2026-1 · Kelompok 14
 - Satria Febry Andanu (103012300372), Ketua
 - Gifan Apriadi (103012300385)
 
-Repositori: https://github.com/ratrifa/mini-ddpm-cifar10
+Repositori: https://github.com/ratrifa/mini-ddpm-cifar10  
 LLM: Claude Opus 5.5 (Claude Code)
 
-> Status: **draf**. Bagian bertanda _(draf LLM dari sesi orchestrator, belum disetujui kelompok)_ perlu dibaca, disesuaikan, dan disetujui kelompok sebelum dikumpulkan.
+> Bagian bertanda _(dirumuskan bersama LLM, disetujui …)_ ditulis bersama LLM, lalu dibaca, disesuaikan, dan disetujui anggota kelompok yang disebut.
 
 ---
 
 ## 1. Pendahuluan
 
 ### 1.1 Latar belakang
-_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+_(dirumuskan bersama LLM, disetujui Satria/Gifan)_
 
 Model diskriminatif mempelajari P(y | x): diberi gambar, tebak labelnya. Model generatif mempelajari distribusi data itu sendiri, P(x), sehingga bisa mengambil sampel x baru yang mirip data asli tetapi tidak ada di dataset (GEN01). Versi *conditional* mempelajari P(x | y): pengguna memilih kelas y, lalu model membuat gambar dari kelas tersebut.
 
@@ -28,7 +28,7 @@ Beberapa keluarga model generatif yang umum adalah VAE, GAN, model autoregresif,
 - Mendokumentasikan seluruh interaksi dengan LLM: inisiasi → penanganan eror → optimasi.
 
 ### 1.3 Alasan memilih DDPM conditional pada CIFAR-10
-_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+_(dirumuskan bersama LLM, disetujui Satria/Gifan)_
 
 - **Gambar berwarna.** Kelompok 4 sudah memakai Fashion-MNIST (grayscale 28×28). CIFAR-10 berwarna (3 channel) dan berisi objek dengan latar belakang, sehingga lebih menantang dan berbeda dari kelompok lain.
 - **Masih realistis untuk Colab gratis.** Resolusi 32×32 membuat U-Net ±4,6 juta parameter cukup, dan training 100 epoch selesai ±3 jam di GPU T4.
@@ -36,7 +36,7 @@ _(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
 - **DDPM cocok untuk "from scratch".** Komponennya (noise schedule, U-Net, loss MSE, sampling) bisa ditulis bertahap per modul dan diuji satu per satu, sesuai alur kerja vibe coding per sesi.
 
 ### 1.4 Hubungan dengan materi kuliah
-_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+_(dirumuskan bersama LLM, disetujui Satria/Gifan)_
 
 - **VAE (GEN06) → DDPM.** VAE dilatih dengan memaksimalkan ELBO dan membuat gambar dengan mengambil sampel dari prior N(0, I) lalu men-decode-nya. DDPM bisa dilihat sebagai VAE bertingkat dengan T = 1000 variabel laten berukuran sama dengan gambar. Bedanya, "encoder"-nya (forward process) tetap dan tidak dilatih. Batas variasionalnya disederhanakan oleh Ho et al. (2020) menjadi MSE antara noise asli dan noise prediksi. Sampling juga dimulai dari N(0, I).
 - **Encoder–decoder (02A).** U-Net adalah encoder–decoder CNN: resolusi diperkecil untuk menangkap konteks, lalu diperbesar lagi ke ukuran asli. Skip connection membawa detail dari encoder ke decoder.
@@ -81,7 +81,7 @@ Keluaran: gambar `(B, 3, 32, 32)` di [-1, 1] dan label `(B,)` bernilai 0–9. La
 
 *Gambar 2. Forward process pada satu gambar per kelas dengan noise tetap. √ᾱ_t (sisa porsi sinyal asli) turun dari 1.00 ke 0.01. Objek masih jelas di t=100, samar di t=300, dan hilang di t ≥ 700.*
 
-_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+_(dirumuskan bersama LLM, disetujui Satria/Gifan)_
 
 - Sinyal tidak hilang secara linear terhadap t. Di t = 100 gambar masih hampir utuh (√ᾱ = 0,95), tetapi antara t = 200 dan t = 500 informasi hilang dengan cepat.
 - Mulai t ≈ 700 gambar sudah tidak bisa dibedakan dari noise murni. Di t = 999, √ᾱ_T ≈ 0,006 (ᾱ_T ≈ 4·10⁻⁵). Ini yang membenarkan sampling dimulai dari N(0, I): x_T memang praktis berupa noise murni.
@@ -196,7 +196,7 @@ Sampel dibuat dari bobot EMA run1 epoch 100, 8 gambar per kelas, dengan noise aw
 > **Catatan: perbandingan visual E2 dan run1 tidak setara.** Gambar 7 berasal dari epoch 30, sedangkan Gambar 4 dari epoch 100. Checkpoint run1 pada epoch 30 tidak disimpan, jadi tidak ada sampel run1 pada jumlah epoch yang sama. Perbedaan kualitas antara kedua grid bisa berasal dari jumlah epoch, bukan dari learning rate. Perbandingan yang adil antara keduanya hanya kurva loss pada epoch 1–30 (Gambar 6).
 
 ### 4.4 Analisis
-_(draf LLM, disetujui Gifan)_
+_(dirumuskan bersama LLM, disetujui Gifan)_
 
 1. **Kurva loss.** Hampir semua penurunan loss terjadi di awal training. Setelah sekitar epoch 20, loss cuma turun sedikit, dan nilai terendahnya di epoch 79. Artinya, dari sisi loss, 100 epoch sudah lebih dari cukup. Tapi loss yang mendatar tidak berarti gambarnya berhenti membaik. Loss DDPM adalah rata-rata kesalahan prediksi noise di semua t, jadi perbaikan detail gambar tidak selalu terlihat di angka loss. Kualitas sampel tetap harus dinilai dari gambarnya.
 2. **Guidance scale.** Class conditioning terbukti bekerja: dengan w = 0 kelasnya acak, dan mulai w = 3 semua baris sesuai label. Ada trade-off antara kejelasan kelas dan variasi. w = 5 membuat warna berlebihan dan gambarnya makin seragam, jadi w = 3 dipilih sebagai titik tengah. Kucing dan anjing paling sulit, kemungkinan karena bentuknya mirip satu sama lain dan sangat bervariasi di resolusi 32×32.
@@ -222,17 +222,17 @@ Alur kerja: tiap modul dikerjakan di branch sendiri (git worktree terpisah per a
 ## 6. Log Interaksi LLM
 | Sesi | Modul | Pelaksana | Log | Ekspor chat |
 |---|---|---|---|---|
-| 1 | Data pipeline + grid dataset | Gifan | [2026-11-07-data-pipeline.md](../logs/2026-11-07-data-pipeline.md) | ekspor sesi orchestrator |
-| 2 | Noise schedule + forward process | Satria | [2026-11-07-diffusion.md](../logs/2026-11-07-diffusion.md) | `export-satria.txt` |
-| 3, 7 | Visualisasi forward process, kurva loss, grid sampel | Gifan | [2026-11-07-visualize.md](../logs/2026-11-07-visualize.md) | `export-gifan.txt` |
-| 4 | U-Net + embedding | Satria | [2026-11-07-model.md](../logs/2026-11-07-model.md) | `export-satria.txt` |
-| 5 | Training loop + notebook | Satria | [2026-11-07-train.md](../logs/2026-11-07-train.md) | `export-satria.txt` |
-| 6 | Sampling | Satria | [2026-11-07-sampling.md](../logs/2026-11-07-sampling.md) | `export-satria.txt` |
-| 8 | Training penuh + tuning (run1, E1, E2) | Satria | [2026-11-08-tuning.md](../logs/2026-11-08-tuning.md) | `export-satria.txt` + ekspor sesi orchestrator |
+| 1 | Data pipeline + grid dataset | Gifan | [2026-11-07-data-pipeline.md](../logs/2026-11-07-data-pipeline.md) | `export-orchestrator.pdf` |
+| 2 | Noise schedule + forward process | Satria | [2026-11-07-diffusion.md](../logs/2026-11-07-diffusion.md) | `export-satria.pdf` |
+| 3, 7 | Visualisasi forward process, kurva loss, grid sampel | Gifan | [2026-11-07-visualize.md](../logs/2026-11-07-visualize.md) | `export-gifan.pdf` |
+| 4 | U-Net + embedding | Satria | [2026-11-07-model.md](../logs/2026-11-07-model.md) | `export-satria.pdf` |
+| 5 | Training loop + notebook | Satria | [2026-11-07-train.md](../logs/2026-11-07-train.md) | `export-satria.pdf` |
+| 6 | Sampling | Satria | [2026-11-07-sampling.md](../logs/2026-11-07-sampling.md) | `export-satria.pdf` |
+| 8 | Training penuh + tuning (run1, E1, E2) | Satria | [2026-11-08-tuning.md](../logs/2026-11-08-tuning.md) | `export-satria.pdf` + `export-orchestrator.pdf` |
 
 File ekspor chat dilampirkan pada berkas pengumpulan, tidak diunggah ke repo publik.
 
-_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+_(dirumuskan bersama LLM, disetujui Satria/Gifan)_
 
 **Pola prompt.**
 - Prompt pembuka tiap sesi menyebut siapa yang bekerja, modul target, dan batasan (worktree sendiri, jangan menyentuh file anggota lain, commit atas nama sendiri).
@@ -257,7 +257,7 @@ _(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
 ---
 
 ## 7. Kesimpulan
-_(draf LLM dari sesi orchestrator, belum disetujui kelompok)_
+_(dirumuskan bersama LLM, disetujui Satria/Gifan)_
 
 - Kelompok berhasil membangun DDPM class-conditional dari nol (±4,6 juta parameter) bersama LLM, dari data pipeline sampai sampling, dalam modul-modul yang dikerjakan dan di-review per sesi.
 - Training 100 epoch di Colab T4 (±3,1 jam) menurunkan loss rata-rata per epoch dari 0,1106 ke 0,0309. Model menghasilkan gambar 32×32 yang dapat dikenali untuk kesepuluh kelas CIFAR-10 pada guidance w = 3.
